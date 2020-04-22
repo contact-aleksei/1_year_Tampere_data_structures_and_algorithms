@@ -1,0 +1,244 @@
+// Datastructures.hh
+
+
+//Aleksei Sapozhnikov
+//293200
+
+//For the given project I used two unordered maps to save regions and stops. StopsID and RegionsID for
+//saving the value and key in Stops and Regions. Also, I used Distances struct to save distances between
+//the stops.
+
+//The unordered map has average performance O(n) to search, add, and remove. I used these
+//operations in other functions, for instance, finding the StopsID or RegionsID when doing other
+//operations.
+
+//Data structure was used for sorting instead of built-in functions of sort vector of C++. Based on
+//observations, the performance improves when converting from one data structure to another.
+
+//The functions' performances are described in header file datastructures.hh as estimate of
+//performance and short rationale for estimate.
+
+#ifndef DATASTRUCTURES_HH
+#define DATASTRUCTURES_HH
+
+#include <string>
+#include <vector>
+#include <utility>
+#include <limits>
+#include <unordered_map>
+#include <memory>
+
+// Types for IDs
+using StopID = long int;
+using RegionID = std::string;
+using Name = std::string;
+
+// Return values for cases where required thing was not found
+StopID const NO_STOP = -1;
+RegionID const NO_REGION = "!!NO_REGION!!";
+
+// Return value for cases where integer values were not found
+int const NO_VALUE = std::numeric_limits<int>::min();
+
+// Return value for cases where name values were not found
+Name const NO_NAME = "!!NO_NAME!!";
+
+// Type for a coordinate (x, y)
+struct Coord
+{
+    int x = NO_VALUE;
+    int y = NO_VALUE;
+};
+
+struct Stops
+{
+    StopID id;
+    Name name;
+    Coord coord;
+    RegionID parentid;
+    int stops_number_of_parents = 0;
+};
+
+
+struct Regions
+{
+    RegionID id;
+    Name name;
+    RegionID parentid;
+    RegionID childid;
+    int regions_number_of_parents = 0;
+    int is_here_parent = 0;
+};
+
+struct Distances
+{
+    StopID id;
+    Name name;
+    Coord coord;
+    int distances = 0;
+    int number_of_distances = 0;
+};
+
+
+
+// Example: Defining == and hash function for Coord so that it can be used
+// as key for std::unordered_map/set, if needed
+inline bool operator==(Coord c1, Coord c2) { return c1.x == c2.x && c1.y == c2.y; }
+inline bool operator!=(Coord c1, Coord c2) { return !(c1==c2); } // Not strictly necessary
+
+// Example: Defining < for Coord so that it can be used
+// as key for std::map/set
+inline bool operator<(Coord c1, Coord c2)
+{
+    if (c1.y < c2.y) { return true; }
+    else if (c2.y < c1.y) { return false; }
+    else { return c1.x < c2.x; }
+}
+
+// Return value for cases where coordinates were not found
+Coord const NO_COORD = {NO_VALUE, NO_VALUE};
+
+
+// This is the class you are supposed to implement
+
+class Datastructures
+{
+public:
+    Datastructures();
+    ~Datastructures();
+
+    // Estimate of performance: O(1).
+    // Short rationale for estimate: Parameter "number_of_stops" implemented in private variables.
+    // However, process of counting number of stops (summing up). Thus estimate is O(n).
+    int stop_count();
+
+    // Estimate of performance: O(1).
+    // Short rationale for estimate: Using 1 command stops_map.clear().
+    void clear_all();
+
+    // Estimate of performance: O(n).
+    // Short rationale for estimate: Operations: an iteration O(n) and
+    // element addition to a vector O(1).
+    std::vector<StopID> all_stops();
+
+    // Estimate of performance: O(n).
+    // Short rationale for estimate: Adding an element to "stops_map" unordered map is O(n), other
+    // commands is O(n).
+    bool add_stop(StopID id, Name const& name, Coord xy);
+
+    // Estimate of performance: O(n).
+    // Short rationale for estimate: Searching an element in "stops_map" unordered map.
+    Name get_stop_name(StopID id);
+
+    // Estimate of performance: O(n).
+    // Short rationale for estimate: Searching an element in "stops_map" unordered map.
+    Coord get_stop_coord(StopID id);
+
+    // We recommend you implement the operations below only after implementing the ones above
+
+    // Estimate of performance: O(n).
+    // Short rationale for estimate: Iterating and converting from "stops_map" unordered map
+    // to multimap and then iterating and converting multipmap to vector "stops_alphabetically_vector".
+    // Thus, overall complexity is O(n).
+    std::vector<StopID> stops_alphabetically();
+
+    // Estimate of performance: O(n).
+    // Short rationale for estimate: Iterating and converting from "stops_map" unordered map
+    // to multimap and then iterating and converting multipmap to vector "stops_alphabetically_vector".
+    // Thus, overall complexity is O(n).
+    std::vector<StopID> stops_coord_order();
+
+    // Estimate of performance: O(n).
+    // Short rationale for estimate: Iterating and converting from "stops_map" unordered map
+    // to multimap and then iterating and converting multipmap to vector "stops_alphabetically_vector".
+    // Thus, overall complexity is O(n).
+    StopID min_coord();
+
+    // Estimate of performance: O(n).
+    // Short rationale for estimate: Iterating and converting from "stops_map" unordered map
+    // to multimap and then iterating and converting multipmap to vector "stops_alphabetically_vector".
+    // Thus, overall complexity is O(n).
+    StopID max_coord();
+
+    // Estimate of performance: O(n log n).
+    // Short rationale for estimate: Iterating through "stops_map" unordered map and
+    // converting  data to "stops_vector" vector. Thus, complexity is O(n log n).
+    std::vector<StopID> find_stops(Name const& name);
+
+    // Estimate of performance: O(n).
+    // Short rationale for estimate: Searching an element in "stops_map" unordered map.
+    bool change_stop_name(StopID id, Name const& newname);
+
+    // Estimate of performance: O(n).
+    // Short rationale for estimate: Searching an element in "stops_map" unordered map.
+    bool change_stop_coord(StopID id, Coord newcoord);
+
+    // We recommend you implement the operations below only after implementing the ones above
+
+    // Estimate of performance: O(n).
+    // Short rationale for estimate: Adding an element to "stops_map" unordered map is O(n), other
+    // commands is O(n).
+    bool add_region(RegionID id, Name const& name);
+
+    // Estimate of performance: O(n).
+    // Short rationale for estimate: Searching an element in "stops_map" unordered map.
+    Name get_region_name(RegionID id);
+
+    // Estimate of performance: O(n).
+    // Short rationale for estimate: Operations: an iteration O(n) and
+    // element addition to a vector O(1).
+    std::vector<RegionID> all_regions();
+
+    // Estimate of performance: O(n).
+    // Short rationale for estimate: Searching elements in "stops_map" unordered map.
+    bool add_stop_to_region(StopID id, RegionID parentid);
+
+    // Estimate of performance: O(n).
+    // Short rationale for estimate: Searching elements in "regions_map" unordered map.
+    bool add_subregion_to_region(RegionID id, RegionID parentid);
+
+    // Estimate of performance: O(n).
+    // Short rationale for estimate: Searching elements in unordered maps.
+    std::vector<RegionID> stop_regions(StopID id);
+
+    // Non-compulsory operations
+
+    // Estimate of performance:
+    // Short rationale for estimate:
+    void creation_finished();
+
+    // Estimate of performance: O(n).
+    // Short rationale for estimate: Iterating through an unordered map.
+    std::pair<Coord, Coord> region_bounding_box(RegionID id);
+
+    // Estimate of performance: O(n).
+    // Short rationale for estimate: Iterating through an unordered map.
+    std::vector<StopID> stops_closest_to(StopID id);
+
+    // Estimate of performance: O(n)
+    // Short rationale for estimate: stops_map.erase(), thus it is a linear complexity.
+    bool remove_stop(StopID id);
+
+    // Estimate of performance:
+    // Short rationale for estimate:
+    RegionID stops_common_region(StopID id1, StopID id2);
+
+
+private:
+    // Add stuff needed for your class implementation here
+
+    std::unordered_map<StopID, std::shared_ptr<Stops>> stops_map;
+    std::unordered_map<RegionID, std::shared_ptr<Regions>> regions_map;
+    std::unordered_map<StopID, std::shared_ptr<Distances>> distances_map;
+
+    double for_coordinates_ordering(StopID id);
+    double for_distances_ordering(StopID id, int a, int b);
+    bool find_id_stops(StopID id);
+    std::pair<Coord,Coord> bounding_box(std::vector<int> xs, std::vector<int> ys);
+
+    int number_of_stops = 0;
+    int number_of_regions = 0;
+    bool find_id_regions(RegionID id);
+};
+
+#endif // DATASTRUCTURES_HH
